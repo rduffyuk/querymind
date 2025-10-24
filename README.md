@@ -1,483 +1,322 @@
 # QueryMind
 
-<div align="center">
+> Multi-agent RAG system with intelligent query routing, semantic search, and web fallback
 
-**Intelligence Behind Every Query**
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-25%20passing-brightgreen.svg)](./tests)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-🧠 Smart RAG system with intelligent query routing · 🚀 <1s for simple queries · 🔒 Local-first & private
+QueryMind is a lightweight, production-ready Retrieval-Augmented Generation (RAG) system that combines ChromaDB vector search, Ollama LLM intelligence, and web search capabilities to provide accurate, context-aware responses from your knowledge base.
 
-[Quickstart](#-quickstart) • [Architecture](#-how-it-works) • [Examples](#-examples) • [Support](#-support)
+## ✨ Features
 
-</div>
+- **🤖 Intelligent Query Routing** - Automatically routes queries to the optimal search strategy
+- **🔍 Semantic Search** - ChromaDB-powered vector search with mxbai-embed-large embeddings
+- **💡 LLM Intent Analysis** - Ollama integration for query understanding and keyword extraction
+- **🌐 Web Search Fallback** - Seamless fallback to Serper.dev when vault has no results
+- **📊 Structured Logging** - Environment-based logging with debug, info, warning, error levels
+- **🛡️ Security Hardened** - Input sanitization, injection protection, and validation
+- **🧪 Fully Tested** - 27 tests covering imports, routing logic, and security
+- **📦 Pip Installable** - Standard Python package with pyproject.toml
 
----
+## 🏗️ Architecture
 
-## 🎯 What is QueryMind?
+QueryMind implements a **multi-agent architecture** with intelligent routing:
 
-QueryMind is an **intelligent RAG (Retrieval-Augmented Generation) system** that automatically chooses the best search strategy for your query.
-
-Not all questions are equal. QueryMind uses a **7-heuristic router** to decide:
-- 🏃 **FastSearch** (<1s) - Simple keyword lookups via BM25 + vector search
-- 🧠 **DeepResearch** (~10s) - Complex questions requiring LLM analysis
-- 🌐 **WebSearch** (2-5s) - External knowledge via Google (Serper.dev API)
-
-### Real-World Example
-
-```python
-from querymind import search
-
-# Simple query → FastSearch (0.8s)
-search("Redis caching patterns")
-
-# Complex query → DeepResearch (12s, but comprehensive)
-search("How should I architect Redis caching for a microservices system?")
-
-# Unknown topic → WebSearch (3s)
-search("Latest Redis features in 2025")
+```
+User Query → Router → [ Fast Search Agent   ] → Results
+                      [ Deep Research Agent ]
+                      [ Web Search (fallback) ]
 ```
 
-QueryMind **automatically routes** each query to the optimal agent. You just ask—it figures out the rest.
+### Agent Types
 
----
+1. **FastSearchAgent** - Direct keyword matching for simple queries (<1s)
+2. **DeepResearchAgent** - Ollama-powered semantic analysis for complex questions (~10s)
+3. **WebSearchClient** - Serper.dev API integration for external knowledge
 
-## 🚀 How to Use QueryMind
+### Query Routing Heuristics
 
-Choose your workflow:
+Queries are automatically routed based on:
+- **Length**: >10 words → Deep Research
+- **Question words**: "how", "why", "what", "explain" → Deep Research
+- **Logical operators**: "and", "or", "not" → Deep Research
+- **Default**: Simple keywords → Fast Search
 
-### 🤖 **With Claude Code** (Recommended)
-Add QueryMind as an MCP server - Claude Code automatically uses it when you ask questions about your vault.
-
-```json
-// ~/.claude/config.json
-{
-  "mcpServers": {
-    "querymind": {
-      "command": "docker",
-      "args": ["exec", "querymind-mcp", "fastmcp", "run", "querymind.mcp.server"]
-    }
-  }
-}
-```
-
-**Then just chat**:
-- "Search my vault for Redis caching patterns"
-- "Find recent project updates from this week"
-- "What did I write about machine learning?"
-
-### 💻 **From Terminal** (Local CLI)
-Run QueryMind commands directly:
-
-```bash
-# Search your vault
-python -m querymind.cli search "Redis caching"
-
-# Ask complex questions
-python -m querymind.cli ask "How to implement caching?"
-
-# Index new documents
-python -m querymind.cli index ~/Documents/vault
-```
-
-### 🐍 **Python Scripts** (Custom integrations)
-```python
-from querymind import search
-
-results = search("Redis caching patterns", n_results=5)
-for r in results['results']:
-    print(f"{r['file']}: {r['score']}")
-```
-
-**📖 See [USER-GUIDE.md](USER-GUIDE.md) for detailed usage examples and workflows**
-
----
-
-## ✨ Key Features
-
-### 🎯 Intelligent Query Routing
-- **7 heuristics** analyze query complexity in <50μs
-- Automatic agent selection (fast/deep/web)
-- 70% queries resolve in <1s (FastSearch)
-- 25% use deep LLM analysis when needed
-- 5% fall back to web for external knowledge
-
-### ⚡ Performance
-- **<1 second** for 70% of queries (FastSearch)
-- **73% cache hit rate** (Redis with smart TTLs)
-- **99.25% token reduction** via progressive disclosure
-- **GPU-accelerated** embeddings (ChromaDB + mxbai-embed-large)
-
-### 🔒 Privacy First (Local-First Design)
-- **Core features 100% local** - FastSearch & DeepResearch run entirely on your machine
-- **WebSearch optional** - Only used for external knowledge (e.g., "latest news 2025"), can be disabled
-- **Zero telemetry** - Your vault data never leaves your machine
-- **Transparent** - Full bash command logs, no hidden operations
-- **Air-gapped compatible** - Works completely offline (disable WebSearch)
-
-### 🛠️ Developer-Friendly
-- **MCP (Model Context Protocol)** - 15 optimized tools for Claude Code/Aider
-- **Docker Compose** - One command to start all services
-- **RESTful API** - Easy integration with any application
-- **5 examples** - From basic search to batch indexing
-
----
-
-## 🚀 Quickstart
+## 🚀 Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
-- 8GB+ RAM (16GB recommended)
-- NVIDIA GPU (optional, for faster embeddings)
 
-### Installation (5 minutes)
+- Python 3.9+
+- Ollama (running locally on port 11434)
+- ChromaDB instance with indexed documents
+- (Optional) Serper.dev API key for web search
+
+### Installation
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/querymind/querymind.git
+# Clone the repository
+git clone https://github.com/rduffyuk/querymind.git
 cd querymind
 
-# 2. Configure environment
-cp docker/.env.example docker/.env
-# Edit docker/.env with your preferences (optional)
+# Install the package
+pip install .
 
-# 3. Start all services
-cd docker
-docker-compose up -d
-
-# 4. Wait for services to initialize (~2 minutes)
-./scripts/health-check.sh
-
-# 5. Index your first documents
-python examples/01_basic_search.py
+# Or install with development dependencies
+pip install -e ".[dev]"
 ```
 
-**That's it!** QueryMind is now running. Try the examples:
+### Environment Setup
+
+Create a `.env` file from the example:
 
 ```bash
-# Simple search
-python examples/01_basic_search.py
-
-# See intelligent routing in action
-python examples/02_intelligent_routing.py
-
-# Search with date filters
-python examples/03_temporal_search.py
+cp .env.example .env
 ```
 
-See [QUICKSTART.md](QUICKSTART.md) for detailed setup instructions.
+Configure your environment variables:
 
----
+```bash
+# Required
+VAULT_PATH=/path/to/your/obsidian-vault
+CHROMADB_URL=http://localhost:8000
+
+# Optional
+SERPER_API_KEY=your-serper-api-key
+OLLAMA_API_URL=http://localhost:11434
+LOG_LEVEL=INFO
+```
+
+## 📖 Usage
+
+### Basic Search
+
+```python
+from querymind import auto_search
+
+# Simple query (uses FastSearchAgent)
+result = auto_search("Redis caching")
+print(f"Found {result.result_count} results")
+for r in result.results:
+    print(f"  - {r['file']}: {r['score']:.2f}")
+
+# Complex query (uses DeepResearchAgent)
+result = auto_search("How to implement Redis caching for APIs?")
+print(f"Agent: {result.agent_type}")
+print(f"Time: {result.elapsed_time:.2f}s")
+```
+
+### Advanced Usage
+
+```python
+from querymind.agents.router import AgentRouter
+
+# Initialize router with custom configuration
+router = AgentRouter(
+    model="mistral:7b",
+    enable_web_fallback=True
+)
+
+# Execute search with verbose logging
+result = router.search(
+    query="Explain StatefulSet vs Deployment",
+    n_results=10,
+    verbose=True
+)
+
+# Get routing statistics
+stats = router.get_stats()
+print(f"Fast searches: {stats['fast_searches']}")
+print(f"Deep searches: {stats['deep_searches']}")
+```
+
+### Direct Agent Access
+
+```python
+from querymind.agents.vault_search_agent_local import VaultSearchAgentLocal
+from querymind.agents.web_search_client import WebSearchClient
+
+# Use vault search agent directly
+vault_agent = VaultSearchAgentLocal(model="mistral:7b")
+result = vault_agent.search("kubernetes deployment patterns")
+
+# Use web search directly
+web_client = WebSearchClient(api_key="your-key")
+results = web_client.search_sync("latest FastAPI best practices", n_results=5)
+```
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_router_basic.py -v
+
+# Run with coverage
+pytest tests/ --cov=querymind --cov-report=html
+```
+
+Test coverage:
+- ✅ 27 tests total
+- ✅ 25 passing (92.6%)
+- ⏭️ 2 skipped (optional dependencies)
+
+### Test Suite
+
+- **test_imports_work.py** - Verify all modules can be imported
+- **test_router_basic.py** - Validate query routing logic and heuristics
+- **test_security_validation.py** - Test input sanitization and injection protection
+
+## 🛠️ Development
+
+### Setup Development Environment
+
+```bash
+# Clone repository
+git clone https://github.com/rduffyuk/querymind.git
+cd querymind
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/
+```
+
+### Code Quality
+
+```bash
+# Format code
+black querymind/ tests/
+
+# Lint code
+ruff querymind/ tests/
+```
+
+## 📋 Project Structure
+
+```
+querymind/
+├── querymind/
+│   ├── __init__.py           # Package initialization
+│   ├── core/                 # Core functionality
+│   │   ├── config.py         # Configuration management
+│   │   ├── logging_config.py # Structured logging
+│   │   ├── embeddings.py     # ChromaDB embeddings
+│   │   ├── cache.py          # Query caching (Redis)
+│   │   ├── conversation_memory.py  # Conversation persistence (stub)
+│   │   └── markdown_chunker.py     # Document chunking
+│   ├── agents/               # Multi-agent system
+│   │   ├── base_agent.py     # Abstract base agent
+│   │   ├── fast_search_agent.py    # Quick keyword search
+│   │   ├── deep_research_agent.py  # LLM-powered search
+│   │   ├── vault_search_agent_local.py  # Ollama integration
+│   │   ├── web_search_client.py    # Web search fallback
+│   │   └── router.py         # Intelligent routing
+│   └── mcp/                  # Model Context Protocol
+│       └── server.py         # FastMCP server
+├── tests/                    # Test suite
+│   ├── test_imports_work.py  # Import verification
+│   ├── test_router_basic.py  # Routing logic tests
+│   └── test_security_validation.py  # Security tests
+├── pyproject.toml            # Package configuration
+├── requirements.txt          # Dependencies
+├── .env.example              # Environment template
+├── .gitignore                # Git ignore rules
+├── LICENSE.txt               # MIT License
+└── README.md                 # This file
+```
 
 ## ⚙️ Configuration
 
-QueryMind uses environment variables for all configuration. Copy `.env.example` to `.env` and customize:
-
-```bash
-# Copy the example configuration
-cp .env.example .env
-
-# Edit with your settings
-nano .env
-```
+QueryMind uses environment variables for configuration. See `.env.example` for all available options:
 
 ### Core Settings
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `VAULT_PATH` | Path to your markdown documents | `/vault` |
-| `CHROMADB_COLLECTION` | Vector database collection name | `obsidian_vault_mxbai` |
-
-### Service URLs
-
-| Variable | Description | Default |
-|----------|-------------|---------|
 | `CHROMADB_URL` | ChromaDB HTTP endpoint | `http://localhost:8000` |
 | `REDIS_URL` | Redis cache endpoint | `redis://localhost:6379` |
-| `OLLAMA_URL` | Ollama LLM endpoint | `http://localhost:11434` |
+| `OLLAMA_API_URL` | Ollama LLM endpoint | `http://localhost:11434` |
+| `LOG_LEVEL` | Logging level (DEBUG/INFO/WARNING/ERROR) | `INFO` |
 
-### Performance Tuning
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `ROUTER_FAST_THRESHOLD` | Word count to trigger DeepResearch | `10` |
-| `CACHE_TTL_QUERY` | Query cache TTL (seconds) | `3600` (1 hour) |
-| `CACHE_TTL_GATHER` | LLM analysis cache TTL (seconds) | `300` (5 min) |
-
-### External APIs (Optional)
+### Optional Features
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SERPER_API_KEY` | [Serper.dev](https://serper.dev) API key for web search | None |
 | `DISABLE_WEB_SEARCH` | Disable web fallback | `false` |
 
-### Example Configurations
-
-**Docker deployment:**
-```bash
-VAULT_PATH=/vault
-CHROMADB_URL=http://chromadb:8000
-REDIS_URL=redis://redis:6379
-OLLAMA_URL=http://ollama:11434
-```
-
-**Local development:**
-```bash
-VAULT_PATH=/home/user/Documents/vault
-CHROMADB_URL=http://localhost:8000
-LOG_LEVEL=DEBUG
-```
-
-**Production:**
-```bash
-VAULT_PATH=/mnt/vault
-SERPER_API_KEY=your_production_key
-CACHE_TTL_QUERY=7200
-LOG_LEVEL=INFO
-```
-
----
-
-## 🏗️ How It Works
-
-### Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   User Query                        │
-└──────────────────┬──────────────────────────────────┘
-                   │
-                   ▼
-        ┌──────────────────────┐
-        │   Router (7 heuristics)│  <50μs decision time
-        └──────────┬─────────────┘
-                   │
-        ┌──────────┴──────────┐
-        │                     │
-        ▼                     ▼
-┌───────────────┐    ┌──────────────────┐
-│ FastSearch    │    │ DeepResearch     │
-│ <1s (70%)     │    │ ~10s (25%)       │
-│               │    │                  │
-│ • BM25        │    │ • LLM analysis   │
-│ • Vector      │    │ • Multi-doc      │
-│ • Cache       │    │ • Synthesis      │
-└───────────────┘    └──────────────────┘
-        │                     │
-        └──────────┬──────────┘
-                   │
-                   ▼
-        ┌─────────────────────┐
-        │   ChromaDB (38K docs)│
-        │   Redis Cache (73%)  │
-        │   Ollama LLMs        │
-        └─────────────────────┘
-```
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Routing** | Python (7 heuristics) | Intelligent query classification |
-| **Search** | ChromaDB + BM25 | Hybrid semantic + keyword search |
-| **LLM** | Ollama (mistral:7b, qwen2.5-coder:14b) | Local inference, zero cloud costs |
-| **Cache** | Redis | 73% hit rate, 5min-1hr TTLs |
-| **MCP** | FastMCP | 15 tools for Claude Code/Aider integration |
-| **Storage** | ChromaDB | 38,380 documents, mxbai-embed-large embeddings |
-
-See [ARCHITECTURE.md](docs/architecture.md) for technical deep-dive.
-
----
-
-## 📚 Examples
-
-### 1. Basic Search
-```python
-from querymind import search
-
-results = search("machine learning pipelines", n_results=5)
-for result in results['results']:
-    print(f"{result['file']}: {result['score']}")
-```
-
-### 2. Intelligent Routing
-```python
-from querymind import auto_search
-
-# Router automatically selects best agent
-response = auto_search("How do I implement caching?", verbose=True)
-print(f"Agent used: {response['agent_type']}")  # "deep_research"
-print(f"Time: {response['elapsed_time']:.2f}s")  # ~12s
-```
-
-### 3. Temporal Search (Date Filtering)
-```python
-from querymind import search
-
-# Search only documents from October 2025
-results = search(
-    "project updates",
-    date_filter="2025-10-01",
-    start_date="2025-10-01",
-    end_date="2025-10-31"
-)
-```
-
-See [examples/](examples/) for 5 complete examples with detailed comments.
-
----
-
-## 🎨 MCP Integration (Claude Code / Aider)
-
-QueryMind provides **15 optimized MCP tools** for seamless integration with Claude Code and Aider:
-
-```json
-{
-  "mcpServers": {
-    "querymind": {
-      "command": "docker",
-      "args": ["exec", "querymind-mcp", "fastmcp", "run", "querymind.mcp.server"]
-    }
-  }
-}
-```
-
-**Available Tools**:
-- `auto_search_vault` - Intelligent search with automatic routing
-- `web_search_vault` - External knowledge via Google
-- `explore_vault_structure` - Filesystem exploration
-- `grep_vault_content` - Fast grep-based search
-- `index_file_to_chromadb` - Real-time indexing
-- `get_gpu_status` - Hardware monitoring
-- ...and 9 more tools
-
-See [docs/mcp-integration.md](docs/mcp-integration.md) for setup guide.
-
----
-
-## ☕ Support
-
-QueryMind is **free and open-source forever** (MIT License).
-
-- ✅ **All features unlocked** - No paywalls, no restrictions
-- ✅ **Personal & commercial use** - Use it however you want
-- ✅ **No telemetry** - 100% private, no tracking
-- ✅ **No account required** - Just download and run
-
-**If QueryMind helps you**, consider supporting development:
-
-**☕ [Buy Me a Coffee](https://buymeacoffee.com/rduffy)**
-
-Your support helps with continued development, bug fixes, and infrastructure costs.
-
-**Coming soon**: Optional commercial support plans for enterprises (inspired by [Obsidian's licensing](https://help.obsidian.md/teams/license)). For now, it's all free!
-
-See [SUPPORT.md](SUPPORT.md) for more ways to help.
-
----
-
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Development setup
-- Code style guidelines
-- Testing requirements
-- Pull request process
+Contributions are welcome! Please follow these guidelines:
 
-### Development Setup
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`pytest tests/`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
-```bash
-# Clone repository
-git clone https://github.com/querymind/querymind.git
-cd querymind
+### Coding Standards
 
-# Install in development mode
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Start services in dev mode
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
-```
-
----
-
-## 📊 Performance Benchmarks
-
-| Metric | Value | Context |
-|--------|-------|---------|
-| **FastSearch latency** | <1s | 70% of queries |
-| **DeepResearch latency** | ~10s | 25% of queries (first time) |
-| **DeepResearch (cached)** | <0.1s | 73% cache hit rate |
-| **Router overhead** | <50μs | Query classification |
-| **Documents indexed** | 38,380 | Default test corpus |
-| **Embedding model** | mxbai-embed-large | 1024 dimensions |
-| **Cache hit rate** | 73% | Redis with smart TTLs |
-
-Run your own benchmarks:
-```bash
-./scripts/benchmark.sh
-```
-
----
+- Follow [PEP 8](https://peps.python.org/pep-0008/) style guide
+- Use [Black](https://black.readthedocs.io/) for code formatting
+- Add tests for new features
+- Update documentation as needed
+- Use structured logging (not print statements)
 
 ## 🗺️ Roadmap
 
-### v1.0 (Current)
-- [x] Intelligent query routing (7 heuristics)
+### Current (v0.1.0)
+- [x] Intelligent query routing with 7 heuristics
 - [x] FastSearch, DeepResearch, WebSearch agents
-- [x] MCP server with 15 tools
-- [x] Docker Compose deployment
-- [x] Redis caching (73% hit rate)
+- [x] Ollama integration for intent analysis
+- [x] ChromaDB vector search
+- [x] Structured logging system
+- [x] Comprehensive test suite (27 tests)
+- [x] Security hardening and input validation
 
-### v1.1 (Next 30 days)
-- [ ] REST API with OpenAPI spec
+### Planned (v0.2.0)
+- [ ] Enhanced caching with gather cache
+- [ ] Async support for concurrent searches
+- [ ] Connection pooling for ChromaDB
+- [ ] Advanced metrics and monitoring
+- [ ] REST API endpoints
 - [ ] Web UI for query testing
-- [ ] PostgreSQL support (alternative to ChromaDB)
-- [ ] Multi-language support (Python, JavaScript, Go clients)
 
-### v2.0 (3-6 months)
-- [ ] Custom agent plugins
-- [ ] Distributed deployment (Kubernetes)
-- [ ] Team collaboration features
-- [ ] Advanced analytics dashboard
+### Future (v1.0.0)
+- [ ] Complete conversation memory implementation
+- [ ] Hot-reload for configuration changes
+- [ ] Docker Compose deployment
+- [ ] Kubernetes deployment guides
+- [ ] Multi-language support
 
-See [GitHub Issues](https://github.com/querymind/querymind/issues) for detailed roadmap.
+## 📝 License
 
----
-
-## 📄 License
-
-QueryMind is released under the **MIT License** - free for personal and commercial use.
-
-See [LICENSE.txt](LICENSE.txt) for full details.
-
-**Support the project**: ☕ [Buy Me a Coffee](https://buymeacoffee.com/rduffy)
-
----
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
 ## 🙏 Acknowledgments
 
 QueryMind builds on excellent open-source projects:
-- [ChromaDB](https://github.com/chroma-core/chroma) - Vector database
-- [Ollama](https://github.com/ollama/ollama) - Local LLM inference
+- [ChromaDB](https://www.trychroma.com/) - Vector database for semantic search
+- [Ollama](https://ollama.ai/) - Local LLM inference
+- [Serper.dev](https://serper.dev/) - Web search API
 - [FastMCP](https://github.com/jlowin/fastmcp) - Model Context Protocol server
-- [Anthropic](https://www.anthropic.com/) - Claude Code integration inspiration
 
 ---
 
-## 📞 Get Help
+**QueryMind** - Intelligent search for your knowledge base
 
-- 📖 **Documentation**: [docs/](docs/)
-- 💬 **Discord**: [Join our community](https://discord.gg/querymind) (coming soon)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/querymind/querymind/issues)
-- 📧 **Email**: hello@querymind.dev
-
----
-
-<div align="center">
-
-**Made with ❤️ for the AI community**
-
-[⭐ Star us on GitHub](https://github.com/querymind/querymind) · [☕ Buy Me a Coffee](https://buymeacoffee.com/rduffy) · [💼 LinkedIn](https://www.linkedin.com/in/rduffyuk) · [📝 Blog](https://blog.rduffy.uk) · [🐦 Twitter](https://twitter.com/querymind)
-
-</div>
+Made with ❤️ by [Ryan Duffy](https://github.com/rduffyuk)
