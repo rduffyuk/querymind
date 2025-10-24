@@ -167,6 +167,75 @@ See [QUICKSTART.md](QUICKSTART.md) for detailed setup instructions.
 
 ---
 
+## ⚙️ Configuration
+
+QueryMind uses environment variables for all configuration. Copy `.env.example` to `.env` and customize:
+
+```bash
+# Copy the example configuration
+cp .env.example .env
+
+# Edit with your settings
+nano .env
+```
+
+### Core Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VAULT_PATH` | Path to your markdown documents | `/vault` |
+| `CHROMADB_COLLECTION` | Vector database collection name | `obsidian_vault_mxbai` |
+
+### Service URLs
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `CHROMADB_URL` | ChromaDB HTTP endpoint | `http://localhost:8000` |
+| `REDIS_URL` | Redis cache endpoint | `redis://localhost:6379` |
+| `OLLAMA_URL` | Ollama LLM endpoint | `http://localhost:11434` |
+
+### Performance Tuning
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ROUTER_FAST_THRESHOLD` | Word count to trigger DeepResearch | `10` |
+| `CACHE_TTL_QUERY` | Query cache TTL (seconds) | `3600` (1 hour) |
+| `CACHE_TTL_GATHER` | LLM analysis cache TTL (seconds) | `300` (5 min) |
+
+### External APIs (Optional)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SERPER_API_KEY` | [Serper.dev](https://serper.dev) API key for web search | None |
+| `DISABLE_WEB_SEARCH` | Disable web fallback | `false` |
+
+### Example Configurations
+
+**Docker deployment:**
+```bash
+VAULT_PATH=/vault
+CHROMADB_URL=http://chromadb:8000
+REDIS_URL=redis://redis:6379
+OLLAMA_URL=http://ollama:11434
+```
+
+**Local development:**
+```bash
+VAULT_PATH=/home/user/Documents/vault
+CHROMADB_URL=http://localhost:8000
+LOG_LEVEL=DEBUG
+```
+
+**Production:**
+```bash
+VAULT_PATH=/mnt/vault
+SERPER_API_KEY=your_production_key
+CACHE_TTL_QUERY=7200
+LOG_LEVEL=INFO
+```
+
+---
+
 ## 🏗️ How It Works
 
 ### Architecture Overview

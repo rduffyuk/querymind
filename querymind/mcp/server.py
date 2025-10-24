@@ -208,9 +208,6 @@ async def search_vault(
     Returns:
         Search results with documents and similarity scores
     """
-    import sys
-    sys.path.append('/home/rduffy/Documents/Leveling-Life')
-    sys.path.append('/home/rduffy/Documents/Leveling-Life/neural-vault')
 
     try:
         # SECURITY: Validate and sanitize input query
@@ -323,9 +320,6 @@ async def index_file_to_chromadb(
     Returns:
         Indexing status and statistics with temporal metadata
     """
-    import sys
-    sys.path.append('/home/rduffy/Documents/Leveling-Life')
-    sys.path.append('/home/rduffy/Documents/Leveling-Life/neural-vault')
 
     try:
         # SECURITY: Validate file path to prevent path traversal
@@ -622,9 +616,6 @@ async def save_conversation_memory(
     Returns:
         Save status and location
     """
-    import sys
-    sys.path.append('/home/rduffy/Documents/Leveling-Life')
-
     try:
         from conversation_memory import ConversationMemory
 
@@ -731,11 +722,10 @@ def get_vault_agent():
     import sys
     import importlib
     import os
-    sys.path.insert(0, '/home/rduffy/Documents/Leveling-Life/agents')
 
-    # Check if module file has been modified
-    module_path = '/home/rduffy/Documents/Leveling-Life/agents/vault_search_agent_local.py'
-    current_mtime = os.path.getmtime(module_path)
+    # Note: Hot-reload disabled - install package with pip install -e . for development
+    # TODO: Implement hot-reload using __file__ attribute when vault_search_agent_local.py exists
+    current_mtime = 0
 
     # Reload only if file was modified since last load
     if 'vault_search_agent_local' in sys.modules and _vault_agent_module_mtime != current_mtime:
@@ -760,18 +750,14 @@ def get_router():
     import sys
     import importlib
     import os
-    sys.path.insert(0, '/home/rduffy/Documents/Leveling-Life/agents')
 
-    # Check if module file has been modified
-    module_path = '/home/rduffy/Documents/Leveling-Life/agents/router.py'
-    if not os.path.exists(module_path):
-        raise FileNotFoundError(f"Router module not found at {module_path}")
-
-    current_mtime = os.path.getmtime(module_path)
+    # Note: Hot-reload disabled - install package with pip install -e . for development
+    # Router module is now part of querymind.agents package
+    current_mtime = 0
 
     # Reload only if file was modified since last load
-    if 'router' in sys.modules and _router_module_mtime != current_mtime:
-        import router
+    if 'querymind.agents.router' in sys.modules and _router_module_mtime != current_mtime:
+        from querymind.agents import router
         importlib.reload(router)
         # Clear cached instance to force recreation with new code
         _router_instance = None
@@ -779,7 +765,7 @@ def get_router():
 
     # Create new instance after reload or if first time
     if _router_instance is None:
-        from router import AgentRouter
+        from querymind.agents.router import AgentRouter
         _router_instance = AgentRouter(model="mistral:7b")
         _router_module_mtime = current_mtime
 
@@ -1303,10 +1289,6 @@ async def auto_search_vault(
 
         # If temporal filter provided, use direct ChromaDB search
         if where_clause:
-            import sys
-            sys.path.append('/home/rduffy/Documents/Leveling-Life')
-            sys.path.append('/home/rduffy/Documents/Leveling-Life/neural-vault')
-
             from chromadb_embeddings_v2 import ChromaDBManager
 
             db_manager = ChromaDBManager(persist_path=CHROMADB_PATH)
@@ -1530,15 +1512,22 @@ async def web_search_vault(
         }
     """
     try:
-        import sys
         import os
-        sys.path.insert(0, '/home/rduffy/Documents/Leveling-Life/agents')
+        # TODO: Implement web_search_client.py in querymind.agents package
+        from querymind.agents.web_search_client import WebSearchClient
 
-        from web_search_client import WebSearchClient
+        # Get API key from config (which loads from SERPER_API_KEY environment variable)
+        if not config.serper_api_key:
+            return {
+                "status": "error",
+                "query": query,
+                "result_count": 0,
+                "results": [],
+                "api_configured": False,
+                "error": "SERPER_API_KEY environment variable not set"
+            }
 
-        # Try to get API key from environment or use hardcoded fallback
-        api_key = os.getenv("SERPER_API_KEY", "0fb9ccd8373b97ba855b1fa0851867cee663c6c3")
-        client = WebSearchClient(api_key=api_key)
+        client = WebSearchClient(api_key=config.serper_api_key)
 
         # Execute search (sync version for MCP)
         results = client.search_sync(query, n_results)
