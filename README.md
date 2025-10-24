@@ -209,22 +209,31 @@ querymind/
 ├── querymind/
 │   ├── __init__.py           # Package initialization
 │   ├── core/                 # Core functionality
+│   │   ├── __init__.py
 │   │   ├── config.py         # Configuration management
 │   │   ├── logging_config.py # Structured logging
 │   │   ├── embeddings.py     # ChromaDB embeddings
 │   │   ├── cache.py          # Query caching (Redis)
 │   │   ├── conversation_memory.py  # Conversation persistence (stub)
-│   │   └── markdown_chunker.py     # Document chunking
+│   │   ├── feature_flags.py  # Feature flag management
+│   │   └── search.py         # Search utilities
 │   ├── agents/               # Multi-agent system
+│   │   ├── __init__.py
 │   │   ├── base_agent.py     # Abstract base agent
 │   │   ├── fast_search_agent.py    # Quick keyword search
 │   │   ├── deep_research_agent.py  # LLM-powered search
 │   │   ├── vault_search_agent_local.py  # Ollama integration
 │   │   ├── web_search_client.py    # Web search fallback
 │   │   └── router.py         # Intelligent routing
+│   ├── cli/                  # Command-line interface
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── main.py
 │   └── mcp/                  # Model Context Protocol
-│       └── server.py         # FastMCP server
+│       ├── server.py         # FastMCP server
+│       └── security_validator.py  # Input validation
 ├── tests/                    # Test suite
+│   ├── __init__.py
 │   ├── test_imports_work.py  # Import verification
 │   ├── test_router_basic.py  # Routing logic tests
 │   └── test_security_validation.py  # Security tests
