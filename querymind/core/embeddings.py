@@ -10,13 +10,18 @@ from chromadb.utils import embedding_functions
 import torch
 import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class ChromaDBManager:
     """Manages ChromaDB with optimized embeddings for your Obsidian vault"""
 
-    def __init__(self, persist_path: str = "/home/rduffy/Documents/Leveling-Life/chromadb_data"):
+    def __init__(self, persist_path: Optional[str] = None):
         """Initialize ChromaDB with mxbai-embed-large embeddings"""
+
+        # Use provided path or get from config
+        if persist_path is None:
+            from querymind.core.config import config
+            persist_path = config.vault_path.replace('/vault', '/chromadb_data')
 
         self.persist_path = Path(persist_path)
         self.persist_path.mkdir(parents=True, exist_ok=True)

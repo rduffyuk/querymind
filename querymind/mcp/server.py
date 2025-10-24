@@ -40,13 +40,14 @@ mcp = FastMCP(
     version="1.1.0"  # Bumped for temporal versioning + caching optimizations
 )
 
-# Configuration
-# Updated 2025-09-22: Using MXBAI embeddings for better accuracy (GPU-accelerated)
-CHROMADB_PATH = "/home/rduffy/Documents/Leveling-Life/chromadb_data"
-OLLAMA_METRICS = "/home/rduffy/Documents/Leveling-Life/ollama_metrics/metrics.json"
+# Configuration from querymind config
+from querymind.core.config import config
+
+CHROMADB_PATH = config.vault_path.replace('/vault', '/chromadb_data')
+OLLAMA_METRICS = config.vault_path.replace('/vault', '/ollama_metrics/metrics.json')
 GPU_MONITOR_URL = "http://localhost:9400/json"
 OLLAMA_MONITOR_URL = "http://localhost:9401/json"
-VAULT_PATH = "/home/rduffy/Documents/Leveling-Life/obsidian-vault"
+VAULT_PATH = config.vault_path
 
 # ==================== Temporal Metadata Extraction ====================
 

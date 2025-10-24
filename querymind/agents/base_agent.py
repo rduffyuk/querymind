@@ -189,13 +189,11 @@ class BaseAgent(ABC):
             List of formatted results with cache indicators
         """
         try:
-            # Import directly to enable Redis caching
-            import sys
-            sys.path.insert(0, '/home/rduffy/Documents/Leveling-Life/neural-vault')
-
+            # Import from querymind package
             import chromadb
-            from chromadb_embeddings_v2 import ChromaDBManager
-            from query_cache import get_cache
+            from querymind.core.embeddings import ChromaDBManager
+            from querymind.core.cache import get_cache
+            from querymind.core.config import config
 
             # Get cache instance
             cache = get_cache()
@@ -231,7 +229,9 @@ class BaseAgent(ABC):
 
                 if _CHROMADB_MANAGER_INSTANCE is None:
                     try:
-                        _CHROMADB_MANAGER_INSTANCE = ChromaDBManager(persist_path='/home/rduffy/Documents/Leveling-Life/neural-vault/chromadb_data')
+                        # Use config for ChromaDB path
+                        chromadb_data_path = config.vault_path.replace('/vault', '/chromadb_data')
+                        _CHROMADB_MANAGER_INSTANCE = ChromaDBManager(persist_path=chromadb_data_path)
                     except ValueError as e:
                         # ChromaDB client already exists with different settings (e.g., from production test script)
                         # Fall back to empty results - Redis cache will handle most queries anyway
@@ -294,15 +294,15 @@ class BaseAgent(ABC):
                 return self._execute_chromadb_search(query_text, n_results)
 
             # Import HybridSearch (lazy import to avoid startup overhead)
-            import sys
-            sys.path.insert(0, '/home/rduffy/Documents/Leveling-Life/neural-vault')
-            from hybrid_search import HybridSearch
+            from querymind.agents.hybrid_search import HybridSearch
+            from querymind.core.config import config
 
             # Initialize hybrid search (will be cached on first use)
             if not hasattr(self, '_hybrid_searcher'):
+                chromadb_data_path = config.vault_path.replace('/vault', '/chromadb_data')
                 self._hybrid_searcher = HybridSearch(
-                    chromadb_path='/home/rduffy/Documents/Leveling-Life/neural-vault/chromadb_data',
-                    collection_name='obsidian_vault_mxbai',
+                    chromadb_path=chromadb_data_path,
+                    collection_name=config.collection_name,
                     model_name='mixedbread-ai/mxbai-embed-large-v1',
                     device='cuda'
                 )
