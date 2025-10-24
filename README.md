@@ -211,33 +211,26 @@ querymind/
 │   ├── core/                 # Core functionality
 │   │   ├── __init__.py
 │   │   ├── config.py         # Configuration management
-│   │   ├── logging_config.py # Structured logging
+│   │   ├── logging_config.py # Structured logging (NEW)
 │   │   ├── embeddings.py     # ChromaDB embeddings
 │   │   ├── cache.py          # Query caching (Redis)
-│   │   ├── conversation_memory.py  # Conversation persistence (stub)
-│   │   ├── feature_flags.py  # Feature flag management
-│   │   └── search.py         # Search utilities
+│   │   └── conversation_memory.py  # Conversation stub (NEW)
 │   ├── agents/               # Multi-agent system
 │   │   ├── __init__.py
 │   │   ├── base_agent.py     # Abstract base agent
 │   │   ├── fast_search_agent.py    # Quick keyword search
 │   │   ├── deep_research_agent.py  # LLM-powered search
-│   │   ├── vault_search_agent_local.py  # Ollama integration
-│   │   ├── web_search_client.py    # Web search fallback
+│   │   ├── vault_search_agent_local.py  # Ollama integration (NEW)
+│   │   ├── web_search_client.py    # Web search fallback (NEW)
 │   │   └── router.py         # Intelligent routing
-│   ├── cli/                  # Command-line interface
-│   │   ├── __init__.py
-│   │   ├── __main__.py
-│   │   └── main.py
 │   └── mcp/                  # Model Context Protocol
-│       ├── server.py         # FastMCP server
-│       └── security_validator.py  # Input validation
-├── tests/                    # Test suite
+│       └── server.py         # FastMCP server
+├── tests/                    # Test suite (NEW)
 │   ├── __init__.py
 │   ├── test_imports_work.py  # Import verification
 │   ├── test_router_basic.py  # Routing logic tests
 │   └── test_security_validation.py  # Security tests
-├── pyproject.toml            # Package configuration
+├── pyproject.toml            # Package configuration (NEW)
 ├── requirements.txt          # Dependencies
 ├── .env.example              # Environment template
 ├── .gitignore                # Git ignore rules
