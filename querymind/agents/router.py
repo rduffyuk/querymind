@@ -19,9 +19,9 @@ import time
 from typing import Dict, Any, Tuple
 from enum import Enum
 
-from base_agent import BaseAgent, SearchResult
-from fast_search_agent import FastSearchAgent
-from deep_research_agent import DeepResearchAgent
+from querymind.agents.base_agent import BaseAgent, SearchResult
+from querymind.agents.fast_search_agent import FastSearchAgent
+from querymind.agents.deep_research_agent import DeepResearchAgent
 
 
 class AgentType(Enum):
@@ -340,6 +340,31 @@ def main():
     print(f"  Gather hit rate:    {stats['deep_agent'].get('gather_cache_hit_rate', 0)*100:.1f}%")
 
     return 0
+
+
+# Convenience function for direct import
+def auto_search(query: str, n_results: int = 5, verbose: bool = False, model: str = "mistral:7b") -> SearchResult:
+    """
+    Automatic search with smart routing (convenience function)
+
+    Creates a router and automatically selects the best agent for the query.
+
+    Args:
+        query: Natural language search query
+        n_results: Number of results to return
+        verbose: Print routing decision and search progress
+        model: Ollama model for DeepResearchAgent
+
+    Returns:
+        SearchResult with agent_type indicating which agent was used
+
+    Example:
+        >>> from querymind.agents.router import auto_search
+        >>> result = auto_search("How to implement Redis caching?")
+        >>> print(f"Found {result.result_count} results using {result.agent_type}")
+    """
+    router = AgentRouter(model=model)
+    return router.search(query, n_results=n_results, verbose=verbose)
 
 
 if __name__ == "__main__":

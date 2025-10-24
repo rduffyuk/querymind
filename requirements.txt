@@ -2,9 +2,12 @@
 chromadb>=0.4.0                # Vector database client
 redis>=5.0.0                   # Cache layer
 requests>=2.31.0               # HTTP client for external APIs
+httpx>=0.24.0                  # Async HTTP client for MCP server
 
 # LLM & Embeddings
-# ollama - managed via Docker, no Python client needed for MVP
+torch>=2.0.0                   # PyTorch for embeddings
+sentence-transformers>=2.2.0   # Sentence embeddings (mxbai)
+# ollama - managed via Docker, uses HTTP API
 
 # MCP Server
 fastmcp>=0.2.0                 # Model Context Protocol server
@@ -18,6 +21,9 @@ python-dotenv>=1.0.0           # Environment variables
 # Utilities
 pyyaml>=6.0.0                  # YAML configuration
 python-dateutil>=2.8.0         # Date parsing for temporal search
+
+# Feature Flags
+UnleashClient>=5.9.0           # Feature flag client
 
 # Development (optional)
 pytest>=7.4.0                  # Testing

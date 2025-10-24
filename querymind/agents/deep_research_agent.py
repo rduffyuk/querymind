@@ -22,9 +22,10 @@ Phase: 3b+ - Multi-Agent System with Web Search
 import time
 from typing import Dict, List, Any, Optional
 
-from base_agent import BaseAgent, SearchResult
-from vault_search_agent_local import VaultSearchAgentLocal
-from web_search_client import WebSearchClient
+from querymind.agents.base_agent import BaseAgent, SearchResult
+# TODO: Implement these agents
+# from querymind.agents.vault_search_agent_local import VaultSearchAgentLocal
+# from querymind.agents.web_search_client import WebSearchClient
 
 
 class DeepResearchAgent(BaseAgent):

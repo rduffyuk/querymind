@@ -22,7 +22,7 @@ import time
 import re
 from typing import Dict, List, Any, Optional
 
-from base_agent import BaseAgent, SearchResult
+from querymind.agents.base_agent import BaseAgent, SearchResult
 
 
 class FastSearchAgent(BaseAgent):
