@@ -1,0 +1,26 @@
+# Core Dependencies
+chromadb>=0.4.0                # Vector database client
+redis>=5.0.0                   # Cache layer
+requests>=2.31.0               # HTTP client for external APIs
+
+# LLM & Embeddings
+# ollama - managed via Docker, no Python client needed for MVP
+
+# MCP Server
+fastmcp>=0.2.0                 # Model Context Protocol server
+pydantic>=2.0.0                # Data validation
+
+# CLI
+click>=8.1.0                   # Command-line interface
+rich>=13.0.0                   # Terminal formatting
+python-dotenv>=1.0.0           # Environment variables
+
+# Utilities
+pyyaml>=6.0.0                  # YAML configuration
+python-dateutil>=2.8.0         # Date parsing for temporal search
+
+# Development (optional)
+pytest>=7.4.0                  # Testing
+pytest-asyncio>=0.21.0         # Async testing
+black>=23.0.0                  # Code formatting
+ruff>=0.1.0                    # Linting
