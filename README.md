@@ -48,26 +48,113 @@ Queries are automatically routed based on:
 
 ### Prerequisites
 
-- Python 3.9+
-- Ollama (running locally on port 11434)
-- ChromaDB instance with indexed documents
-- (Optional) Serper.dev API key for web search
+**System Requirements:**
+- Python 3.9 or higher
+- 8GB+ RAM (16GB recommended for better performance)
+- (Optional) NVIDIA GPU for faster embeddings
 
-### Installation
+**Required Services:**
+- **Ollama** - Local LLM inference (mistral:7b or similar)
+- **ChromaDB** - Vector database for semantic search
+- **Redis** - Query caching (optional but recommended)
+
+### Step 1: Install Ollama
+
+Ollama provides local LLM inference for query analysis.
+
+**macOS / Linux:**
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Pull the mistral model (7B parameters, ~4GB)
+ollama pull mistral:7b
+
+# Verify installation
+ollama list
+```
+
+**Windows:**
+1. Download installer from https://ollama.com/download
+2. Run installer and follow prompts
+3. Open PowerShell and run: `ollama pull mistral:7b`
+
+**Verify Ollama is running:**
+```bash
+curl http://localhost:11434/api/tags
+# Should return list of installed models
+```
+
+### Step 2: Install ChromaDB
+
+ChromaDB provides vector search capabilities.
+
+**Option A: Install as Python package (Recommended for development)**
+```bash
+# ChromaDB will be installed automatically with QueryMind
+# It runs in-process (no separate server needed)
+```
+
+**Option B: Run ChromaDB server (Recommended for production)**
+```bash
+# Install ChromaDB server
+pip install chromadb
+
+# Run ChromaDB server
+chroma run --host localhost --port 8000
+
+# Verify server is running
+curl http://localhost:8000/api/v1/heartbeat
+```
+
+### Step 3: Install Redis (Optional)
+
+Redis provides query caching for better performance (73% cache hit rate).
+
+**macOS:**
+```bash
+brew install redis
+brew services start redis
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install redis-server
+sudo systemctl start redis
+```
+
+**Windows:**
+```bash
+# Download from https://github.com/microsoftarchive/redis/releases
+# Or use WSL2 with Ubuntu instructions above
+```
+
+**Verify Redis:**
+```bash
+redis-cli ping
+# Should return: PONG
+```
+
+### Step 4: Install QueryMind
 
 ```bash
 # Clone the repository
 git clone https://github.com/rduffyuk/querymind.git
 cd querymind
 
-# Install the package
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install QueryMind with all dependencies
 pip install .
 
-# Or install with development dependencies
+# Or install in development mode
 pip install -e ".[dev]"
 ```
 
-### Environment Setup
+### Step 5: Configure Environment
 
 Create a `.env` file from the example:
 
@@ -75,17 +162,127 @@ Create a `.env` file from the example:
 cp .env.example .env
 ```
 
-Configure your environment variables:
+Edit `.env` with your settings:
 
 ```bash
-# Required
+# Required - Path to your markdown documents
 VAULT_PATH=/path/to/your/obsidian-vault
-CHROMADB_URL=http://localhost:8000
 
-# Optional
-SERPER_API_KEY=your-serper-api-key
+# ChromaDB settings
+CHROMADB_URL=http://localhost:8000  # Or leave blank for in-process mode
+
+# Redis settings (optional - will fall back to in-memory cache)
+REDIS_URL=redis://localhost:6379
+
+# Ollama settings
 OLLAMA_API_URL=http://localhost:11434
-LOG_LEVEL=INFO
+
+# Optional - Web search API key (100 free queries/month)
+SERPER_API_KEY=your-api-key-here
+
+# Logging
+LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR
+```
+
+### Step 6: Verify Installation
+
+Run the test suite to verify everything is working:
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Should see: 25 passed, 2 skipped
+```
+
+Test a simple query:
+
+```python
+from querymind import auto_search
+
+# Simple test query
+result = auto_search("test query", n_results=1)
+print(f"Status: {result.status}")
+print(f"Agent: {result.agent_type}")
+```
+
+### Optional: Get Serper.dev API Key
+
+For web search fallback functionality:
+
+1. Sign up at https://serper.dev
+2. Get your API key from the dashboard
+3. Add to `.env`: `SERPER_API_KEY=your-key-here`
+4. Free tier: 100 queries/month
+5. After free tier: $0.30 per 1,000 queries
+
+### Optional: Install Obsidian for Document Management
+
+Obsidian is a powerful markdown editor that works well for managing the document vault that QueryMind searches. While not required, it provides a great interface for creating and organizing your knowledge base.
+
+**macOS:**
+```bash
+# Download from website
+open https://obsidian.md/download
+
+# Or install via Homebrew
+brew install --cask obsidian
+```
+
+**Linux:**
+```bash
+# Download AppImage from website
+wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.4.16/Obsidian-1.4.16.AppImage
+
+# Make executable and run
+chmod +x Obsidian-1.4.16.AppImage
+./Obsidian-1.4.16.AppImage
+
+# Or install via Snap
+sudo snap install obsidian --classic
+```
+
+**Windows:**
+```bash
+# Download installer from website
+start https://obsidian.md/download
+
+# Or install via Chocolatey
+choco install obsidian
+```
+
+**Setup your vault:**
+1. Open Obsidian
+2. Create a new vault or open existing vault at `VAULT_PATH` from your `.env`
+3. Start creating markdown documents
+4. QueryMind will automatically index and search these documents
+
+### Troubleshooting
+
+**Ollama connection failed:**
+```bash
+# Check if Ollama is running
+ollama list
+
+# Restart Ollama
+# macOS/Linux: sudo systemctl restart ollama
+# Windows: Restart Ollama Desktop app
+```
+
+**ChromaDB errors:**
+```bash
+# If using server mode, check if running
+curl http://localhost:8000/api/v1/heartbeat
+
+# If in-process mode, ensure adequate RAM
+# ChromaDB needs ~2-4GB for mxbai-embed-large model
+```
+
+**Redis not available:**
+```bash
+# QueryMind will fall back to in-memory cache
+# To use Redis, ensure it's running:
+redis-cli ping
 ```
 
 ## 📖 Usage
