@@ -10,6 +10,9 @@ import time
 from typing import Any, Dict, Optional, Tuple
 from collections import OrderedDict
 from threading import Lock
+from querymind.core.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 class QueryCache:
     """
@@ -45,10 +48,10 @@ class QueryCache:
             )
             self.redis_client.ping()
             self.use_redis = True
-            print("✅ Connected to Redis for query caching")
+            logger.info("Connected to Redis for query caching")
         except Exception:
             self.use_redis = False
-            print("ℹ️ Redis not available, using in-memory cache")
+            logger.info("Redis not available, using in-memory cache")
 
     def _generate_key(self, query: str, n_results: int, collection: str) -> str:
         """Generate cache key from query parameters."""

@@ -236,8 +236,8 @@ async def search_vault(
 
         # Use GPU-accelerated embeddings (switched from CPU for performance)
         # vLLM testing complete - GPU available for ChromaDB
-        from chromadb_embeddings_v2 import ChromaDBManager
-        from query_cache import get_cache
+        from querymind.core.embeddings import ChromaDBManager
+        from querymind.core.cache import get_cache
 
         # Check cache first
         cache = get_cache()
@@ -336,8 +336,8 @@ async def index_file_to_chromadb(
                 'collection': collection
             }
 
-        from chromadb_embeddings_v2 import ChromaDBManager
-        from markdown_chunker import ObsidianMarkdownChunker
+        from querymind.core.embeddings import ChromaDBManager
+        from querymind.core.markdown_chunker import ObsidianMarkdownChunker
 
         # Initialize ChromaDB
         db_manager = ChromaDBManager(persist_path=CHROMADB_PATH)
@@ -617,7 +617,7 @@ async def save_conversation_memory(
         Save status and location
     """
     try:
-        from conversation_memory import ConversationMemory
+        from querymind.core.conversation_memory import ConversationMemory
 
         memory = ConversationMemory()
 
@@ -1289,7 +1289,7 @@ async def auto_search_vault(
 
         # If temporal filter provided, use direct ChromaDB search
         if where_clause:
-            from chromadb_embeddings_v2 import ChromaDBManager
+            from querymind.core.embeddings import ChromaDBManager
 
             db_manager = ChromaDBManager(persist_path=CHROMADB_PATH)
             collection = db_manager.get_collection("obsidian_vault_mxbai")
@@ -1339,7 +1339,7 @@ async def auto_search_vault(
         router = get_router()
 
         # Get routing decision for metadata
-        from router import AgentType
+        from querymind.agents.router import AgentType
         agent_type, reason = router._analyze_query(query, verbose=verbose)
 
         # Execute with router (auto-selects agent)

@@ -13,6 +13,9 @@ Phase: 3b - Multi-Agent System
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional
+from querymind.core.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # Global singleton for ChromaDBManager to avoid re-initialization across all agent instances
 _CHROMADB_MANAGER_INSTANCE: Optional[Any] = None
@@ -136,9 +139,9 @@ class BaseAgent(ABC):
         filtered = [r for r in results if r.get("score", 0) > min_score]
 
         if not filtered:
-            print(f"⚠️ Verification filtered all {len(results)} results (min_score={min_score})")
+            logger.warning(f"Verification filtered all {len(results)} results (min_score={min_score})")
             if results:
-                print(f"   Sample scores: {[r.get('score', 0) for r in results[:3]]}")
+                logger.warning(f"Sample scores: {[r.get('score', 0) for r in results[:3]]}")
             return {
                 "valid": False,
                 "reason": f"No high-confidence results (all scores < {min_score})",
@@ -225,7 +228,7 @@ class BaseAgent(ABC):
                 # OPTION 2: Use module-level singleton to avoid reinitializing GPU/embeddings on every call
                 global _CHROMADB_MANAGER_INSTANCE
 
-                print(f"DEBUG: Checking singleton - is None? {_CHROMADB_MANAGER_INSTANCE is None}, id={id(_CHROMADB_MANAGER_INSTANCE) if _CHROMADB_MANAGER_INSTANCE else 'None'}")
+                logger.debug(f"Checking singleton - is None? {_CHROMADB_MANAGER_INSTANCE is None}, id={id(_CHROMADB_MANAGER_INSTANCE) if _CHROMADB_MANAGER_INSTANCE else 'None'}")
 
                 if _CHROMADB_MANAGER_INSTANCE is None:
                     try:
@@ -265,9 +268,7 @@ class BaseAgent(ABC):
             return results
 
         except Exception as e:
-            print(f"⚠️ ChromaDB search exception: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"ChromaDB search exception: {type(e).__name__}: {str(e)}", exc_info=True)
             return [{"error": str(e), "status": "failed"}]
 
     def _execute_hybrid_search(self, query_text: str, n_results: int = 5) -> List[Dict[str, Any]]:

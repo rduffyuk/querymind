@@ -11,6 +11,9 @@ import torch
 import time
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from querymind.core.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 class ChromaDBManager:
     """Manages ChromaDB with optimized embeddings for your Obsidian vault"""
@@ -26,16 +29,16 @@ class ChromaDBManager:
         self.persist_path = Path(persist_path)
         self.persist_path.mkdir(parents=True, exist_ok=True)
 
-        print("📊 Initializing ChromaDB with mxbai-embed-large...")
+        logger.info("Initializing ChromaDB with mxbai-embed-large")
 
         # Check GPU availability
         if torch.cuda.is_available():
             device = "cuda"
-            print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)}")
-            print(f"   VRAM available: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+            logger.info(f"GPU detected: {torch.cuda.get_device_name(0)}")
+            logger.info(f"VRAM available: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
         else:
             device = "cpu"
-            print("⚠️ No GPU detected, using CPU")
+            logger.warning("No GPU detected, using CPU")
 
         # Use ChromaDB's built-in SentenceTransformer embedding function
         # This automatically handles the proper interface
@@ -44,7 +47,7 @@ class ChromaDBManager:
             device=device
         )
 
-        print(f"✅ Loaded mxbai-embed-large on {device}")
+        logger.info(f"Loaded mxbai-embed-large on {device}")
 
         # Initialize ChromaDB client
         self.client = chromadb.PersistentClient(
@@ -55,11 +58,11 @@ class ChromaDBManager:
             )
         )
 
-        print(f"✅ ChromaDB initialized at: {self.persist_path}")
+        logger.info(f"ChromaDB initialized at: {self.persist_path}")
 
         # Show GPU memory usage after model load
         if torch.cuda.is_available():
-            print(f"   VRAM used: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
+            logger.info(f"VRAM used: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
 
     def create_collection(self, name: str, description: str = "", optimize_hnsw: bool = True) -> chromadb.Collection:
         """
@@ -78,7 +81,7 @@ class ChromaDBManager:
         # Delete existing collection if it exists (for testing)
         try:
             self.client.delete_collection(name)
-            print(f"🗑️ Deleted existing collection: {name}")
+            logger.info(f"Deleted existing collection: {name}")
         except:
             pass
 
@@ -102,7 +105,7 @@ class ChromaDBManager:
                 "hnsw:num_threads": cpu_count,       # Use all CPU cores
                 "hnsw:search_ef": 100                # Search-time parameter (default: 10)
             })
-            print(f"🚀 HNSW optimization enabled: ef={200}, M={32}, threads={cpu_count}")
+            logger.info(f"HNSW optimization enabled: ef={200}, M={32}, threads={cpu_count}")
 
         # Create new collection with custom embedding function
         collection = self.client.create_collection(
@@ -111,7 +114,7 @@ class ChromaDBManager:
             metadata=metadata
         )
 
-        print(f"✅ Created collection: {name}")
+        logger.info(f"Created collection: {name}")
         return collection
 
     def get_collection(self, name: str) -> chromadb.Collection:
@@ -133,7 +136,7 @@ class ChromaDBManager:
         if metadatas is None:
             metadatas = [{"index": i} for i in range(len(documents))]
 
-        print(f"📝 Adding {len(documents)} documents to collection...")
+        logger.info(f"Adding {len(documents)} documents to collection")
 
         start_time = time.time()
 
@@ -149,20 +152,20 @@ class ChromaDBManager:
             )
 
             if len(documents) > batch_size:
-                print(f"   Processed {batch_end}/{len(documents)} documents...")
+                logger.debug(f"Processed {batch_end}/{len(documents)} documents")
 
         elapsed = time.time() - start_time
-        print(f"✅ Added {len(documents)} documents in {elapsed:.2f} seconds")
+        logger.info(f"Added {len(documents)} documents in {elapsed:.2f} seconds")
 
         if len(documents) > 0:
-            print(f"   Average: {elapsed/len(documents)*1000:.2f}ms per document")
+            logger.info(f"Average: {elapsed/len(documents)*1000:.2f}ms per document")
 
     def search(self, collection: chromadb.Collection,
               query: str,
               n_results: int = 5) -> Dict[str, Any]:
         """Search collection with performance metrics"""
 
-        print(f"\n🔍 Searching for: '{query[:50]}...'")
+        logger.info(f"Searching for: '{query[:50]}...'")
 
         start_time = time.time()
 
@@ -174,7 +177,7 @@ class ChromaDBManager:
 
         elapsed = (time.time() - start_time) * 1000
 
-        print(f"✅ Found {len(results['documents'][0])} results in {elapsed:.2f}ms")
+        logger.info(f"Found {len(results['documents'][0])} results in {elapsed:.2f}ms")
 
         return results
 

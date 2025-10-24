@@ -21,11 +21,13 @@ Phase: 3b+ - Multi-Agent System with Web Search
 
 import time
 from typing import Dict, List, Any, Optional
+from querymind.core.logging_config import get_logger
 
 from querymind.agents.base_agent import BaseAgent, SearchResult
-# TODO: Implement these agents
-# from querymind.agents.vault_search_agent_local import VaultSearchAgentLocal
-# from querymind.agents.web_search_client import WebSearchClient
+from querymind.agents.vault_search_agent_local import VaultSearchAgentLocal
+from querymind.agents.web_search_client import WebSearchClient
+
+logger = get_logger(__name__)
 
 
 class DeepResearchAgent(BaseAgent):
@@ -95,7 +97,7 @@ class DeepResearchAgent(BaseAgent):
         # Check if we should try web fallback
         if web_fallback_enabled and result.status == "no_results" and self.web_client:
             if verbose:
-                print(f"[WEB FALLBACK] No vault results found, searching web...")
+                logger.info("Web fallback: No vault results found, searching web")
 
             try:
                 # Search the web
@@ -124,11 +126,11 @@ class DeepResearchAgent(BaseAgent):
                     self.web_fallback_count += 1
 
                     if verbose:
-                        print(f"[WEB FALLBACK] Found {len(formatted_results)} web results")
+                        logger.info(f"Web fallback: Found {len(formatted_results)} web results")
 
             except Exception as e:
                 if verbose:
-                    print(f"[WEB FALLBACK] Error: {e}")
+                    logger.error(f"Web fallback error: {e}")
                 # Keep original no_results status
                 pass
 
