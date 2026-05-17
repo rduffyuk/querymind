@@ -519,3 +519,12 @@ QueryMind builds on excellent open-source projects:
 **QueryMind** - Intelligent search for your knowledge base
 
 Made with ❤️ by [Ryan Duffy](https://github.com/rduffyuk)
+
+---
+
+## About
+
+Built by **Ryan Duffy** — SRE specialist documenting AI infrastructure on [rduffy.uk](https://rduffy.uk) / [blog.rduffy.uk](https://blog.rduffy.uk). Part of the Rootweaver platform exploration — Building in Public series on RAG, MCP, multi-agent orchestration, and personal AI infrastructure on K3s.
+
+- 📝 Blog: [blog.rduffy.uk](https://blog.rduffy.uk)
+- 📡 RSS: [blog.rduffy.uk/rss.xml](https://blog.rduffy.uk/rss.xml)
